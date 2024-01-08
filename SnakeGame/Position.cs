@@ -18,6 +18,10 @@ namespace SnakeGame
         {
             return new Position(Row + dir.RowOffset, Col + dir.ColOffset);
         }
+        public Position TranslateFood(Direction dir)
+        {
+            return new Position(Row + dir.RowOffset, Col + dir.ColOffset);
+        }
 
         public override bool Equals(object obj)
         {

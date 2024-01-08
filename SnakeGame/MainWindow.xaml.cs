@@ -24,7 +24,7 @@ namespace SnakeGame
         {
             {GridValue.Empty, Images.Empty },
             { GridValue.Snake, Images.Body },
-            { GridValue.Food, Images.Food },
+            { GridValue.Food, Images.Bunny },
         };
 
         private readonly Dictionary<Direction, int> dirToRotation = new()
@@ -38,10 +38,11 @@ namespace SnakeGame
     
 
 
-        private readonly int rows = 6, cols = 6;
+        private readonly int rows = 15, cols = 15;
         private readonly Image[,] gridImages;
         private GameState gameState;
         private bool gameRuning;
+        public int Players { get; set; } = 1;
         public MainWindow()
         {
             InitializeComponent();
@@ -67,6 +68,18 @@ namespace SnakeGame
 
             if (!gameRuning)
             {
+                if (e.Key == Key.D2)
+                {
+                    Players = 2;
+                }
+                else if (e.Key == Key.D1)
+                {
+                    Players = 1;
+                }
+                else
+                {
+                    return;
+                }
                 gameRuning = true;
                 await RunGame();
                 gameRuning = false;
@@ -74,28 +87,55 @@ namespace SnakeGame
         }
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
+            
+            
+
             if (gameState.GameOver)
             {
                 return;
             }
             switch (e.Key)
             {
-                case Key.A:
-                    gameState.ChangeDirection(Direction.Left); break;
-                case Key.D:
-                    gameState.ChangeDirection(Direction.Right); break;
-                case Key.W:
-                    gameState.ChangeDirection(Direction.Up); break;
-                case Key.S:
-                    gameState.ChangeDirection(Direction.Down); break;
                 case Key.Left:
-                    gameState.ChangeDirection(Direction.Left); break;
+                    gameState.ChangeDirectionSnake(Direction.Left); break;
                 case Key.Right:
-                    gameState.ChangeDirection(Direction.Right); break;
+                    gameState.ChangeDirectionSnake(Direction.Right); break;
                 case Key.Up:
-                    gameState.ChangeDirection(Direction.Up); break;
+                    gameState.ChangeDirectionSnake(Direction.Up); break;
                 case Key.Down:
-                    gameState.ChangeDirection(Direction.Down); break;
+                    gameState.ChangeDirectionSnake(Direction.Down); break;
+                case Key.E:
+                    gameState.ChangeDirectionFood(Direction.None);  break;
+                    
+
+                    
+            }
+            if (Players == 2)
+                    { switch (e.Key)
+                {
+                    case Key.A:
+                        gameState.ChangeDirectionFood(Direction.Left); break;
+                    case Key.D:
+                        gameState.ChangeDirectionFood(Direction.Right); break;
+                    case Key.W:
+                        gameState.ChangeDirectionFood(Direction.Up); break;
+                    case Key.S:
+                        gameState.ChangeDirectionFood(Direction.Down); break;
+                }
+            }
+            else
+            {       
+                switch (e.Key)
+                {
+                    case Key.A:
+                        gameState.ChangeDirectionSnake(Direction.Left); break;
+                    case Key.D:
+                        gameState.ChangeDirectionSnake(Direction.Right); break;
+                    case Key.W:
+                        gameState.ChangeDirectionSnake(Direction.Up); break;
+                    case Key.S:
+                        gameState.ChangeDirectionSnake(Direction.Down); break;
+                }
             }
         }
 
@@ -103,7 +143,13 @@ namespace SnakeGame
         {
             while (!gameState.GameOver)
             {
-                await Task.Delay(150);
+                int spood = 0;
+                int speedy =  100 - gameState.Score;
+                if (speedy >= 1)
+                {
+                    spood = speedy;
+                }
+                await Task.Delay(spood);
                 gameState.Move();
                 Draw();
             }
@@ -191,7 +237,7 @@ namespace SnakeGame
             await DrawDeadSnake();
             await Task.Delay(1000);
             Overlay.Visibility = Visibility.Visible;
-            OverlayText.Text = "PRESS ANY KEY TO START";
+            OverlayText.Text = "Press 1 for single player. Press 2 for 2 player.";
         }
     }
 }

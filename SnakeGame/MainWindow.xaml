@@ -43,7 +43,8 @@
                          SnapsToDevicePixels="True"
                          RenderOptions.BitmapScalingMode="HighQuality">
             </UniformGrid>
-        </Border>
+                
+            </Border>
 
             <Border x:Name="Overlay"
                     Grid.Row="1"
@@ -53,7 +54,7 @@
                     Margin="{Binding Path=Margin, ElementName=GridBorder}"
                     RenderOptions.EdgeMode="Aliased">
                 <TextBlock x:Name="OverlayText"
-                           Text="PRESS ANY KEY TO START"
+                           Text="Press 1 for single player. Press 2 for 2 player."
                            FontSize="26"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"

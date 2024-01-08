@@ -9,14 +9,20 @@ namespace SnakeGame
         public int Rows { get; }
         public int Cols { get; }
 
-        public GridValue[,] Grid {  get; }
+        public GridValue[,] Grid { get; }
         public Direction Dir { get; private set; }
+        public Direction Dirfood { get; private set; }
         public int Score { get; private set; }
         public bool GameOver { get; private set; }
 
+        
+
         private readonly LinkedList<Direction> dirChanges = new LinkedList<Direction>();
+        private readonly LinkedList<Direction> dirChangesFood = new LinkedList<Direction>();
         private readonly LinkedList<Position> snakePositions = new LinkedList<Position>();
+        private readonly LinkedList<Position> foodPositions = new LinkedList<Position>();
         private readonly Random random = new Random();
+        
 
         public GameState(int rows, int cols)
         {
@@ -24,6 +30,7 @@ namespace SnakeGame
             Cols = cols;
             Grid = new GridValue[rows, cols];
             Dir = Direction.Right;
+            Dirfood = Direction.None;
 
             AddSnake();
             AddFood();
@@ -62,6 +69,7 @@ namespace SnakeGame
 
             Position pos = empty[random.Next(empty.Count)];
             Grid[pos.Row, pos.Col] = GridValue.Food;
+            foodPositions.AddFirst(pos);
         }
 
         public Position HeadPosition()
@@ -91,6 +99,32 @@ namespace SnakeGame
             Grid[tail.Row, tail.Col] = GridValue.Empty;
             snakePositions.RemoveLast();
         }
+        
+        public Position FoodHeadPosition()
+        {
+            return foodPositions.First.Value;
+        }
+
+        public Position FoodTailPosition()
+        {
+            return foodPositions.Last.Value;
+        }
+
+        public IEnumerable<Position> FoodPositions()
+        {
+            return foodPositions;
+        }
+        private void FoodAddHead(Position pos)
+        {
+            foodPositions.AddFirst(pos);
+            Grid[pos.Row, pos.Col] = GridValue.Food;
+        }
+        private void RemoveFoodTail()
+        {
+            Position tail = foodPositions.Last.Value;
+            Grid[tail.Row, tail.Col] = GridValue.Empty;
+            foodPositions.RemoveLast();
+        }
 
         private Direction GetLastDirection()
         {
@@ -111,12 +145,28 @@ namespace SnakeGame
             Direction lastDir = GetLastDirection();
             return newDir != lastDir && newDir != lastDir.Opposite();
         }
+        private bool CanChangeDirectionFood(Direction newDir)
+        {
+            if (dirChangesFood.Count == 2)
+            {
+                return false;
+            }
+            return true;
+        }
 
-        public void ChangeDirection(Direction dir)
+        public void ChangeDirectionSnake(Direction dir)
         {
             if (CanChangeDirection(dir))
             {
                 dirChanges.AddLast(dir);
+            }
+        }
+
+        public void ChangeDirectionFood(Direction dir)
+        {
+            if (CanChangeDirectionFood(dir))
+            {
+                dirChangesFood.AddLast(dir);
             }
         }
 
@@ -147,6 +197,12 @@ namespace SnakeGame
                 dirChanges.RemoveFirst();
             }
 
+            if (dirChangesFood.Count > 0)
+            {
+                Dirfood = dirChangesFood.First.Value;
+                dirChangesFood.RemoveFirst();
+            }
+
             Position newHeadPos = HeadPosition().Translate(Dir);
             GridValue hit = WillHit(newHeadPos);
 
@@ -164,8 +220,26 @@ namespace SnakeGame
             {
                 AddHead(newHeadPos);
                 Score++;
+                foodPositions.Clear();
                 AddFood();
             }
+
+            Position newFoodHeadPos = FoodHeadPosition().TranslateFood(Dirfood);
+            GridValue foodHit = WillHit(newFoodHeadPos);
+
+            if (foodHit == GridValue.Empty)
+            {
+                FoodAddHead(newFoodHeadPos);
+                RemoveFoodTail();
+            }
+            else if (foodHit == GridValue.Outside)
+            { 
+                return;
+            }
+
+            
+            
+            
         }
     }
 }
